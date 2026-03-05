@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planificación DT Base - 6° y 7°</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Patrón de la cancha */
+    .pitch-pattern {
+      background-image: repeating-linear-gradient(90deg, transparent, transparent 10%, rgba(255,255,255,0.05) 10%, rgba(255,255,255,0.05) 20%);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-emerald-800 text-white shadow-md z-10 sticky top-0">
+    <div class="max-w-7xl mx-auto px-4 py-4 md:py-6 flex flex-col md:flex-row md:items-center justify-between">
+      <div class="flex items-center space-x-3 mb-4 md:mb-0">
+        <div class="p-2 md:p-3 bg-white text-emerald-800 rounded-xl shadow-sm">
+          <i data-lucide="activity" class="w-6 h-6 md:w-7 md:h-7"></i>
+        </div>
+        <div>
+          <h1 class="text-xl md:text-2xl font-black tracking-tight leading-tight">Planificación DT Base</h1>
+          <p class="text-emerald-200 font-medium text-xs md:text-sm">Categoría 6° y 7° | 1 sesión/semana</p>
+        </div>
+      </div>
+      
+      <!-- Navegación -->
+      <div class="flex bg-emerald-900 rounded-lg p-1">
+        <button id="btn-tab-plan" onclick="switchTab('plan')" class="flex items-center space-x-2 px-4 py-2 rounded-md font-semibold text-sm transition-colors bg-emerald-700 text-white shadow">
+          <i data-lucide="calendar" class="w-4 h-4"></i> <span>Plan de 10 Semanas</span>
+        </button>
+        <button id="btn-tab-board" onclick="switchTab('board')" class="flex items-center space-x-2 px-4 py-2 rounded-md font-semibold text-sm transition-colors text-emerald-300 hover:text-white">
+          <i data-lucide="map" class="w-4 h-4"></i> <span>Pizarra Libre</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="flex-grow max-w-7xl mx-auto w-full px-2 sm:px-4 py-6 flex flex-col md:flex-row gap-6 h-full relative">
+    
+    <!-- VISTA: PLAN DE 10 SEMANAS -->
+    <div id="view-plan" class="flex flex-col md:flex-row gap-6 w-full fade-in">
+      
+      <!-- Menú Lateral (Semanas) -->
+      <aside class="w-full md:w-1/4 lg:w-1/5 flex-shrink-0">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden sticky top-24">
+          <div class="bg-slate-100 p-3 border-b border-slate-200 font-bold text-slate-700 text-sm uppercase tracking-wider">
+            Microciclo
+          </div>
+          <div id="sidebar-weeks" class="flex flex-row md:flex-col overflow-x-auto md:overflow-y-auto max-h-[200px] md:max-h-[calc(100vh-150px)] no-scrollbar p-2 gap-1">
+            <!-- Renderizado por JS -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- Contenido de la Semana Seleccionada -->
+      <section id="week-content" class="flex-grow flex flex-col gap-6 min-w-0">
+        <!-- Renderizado por JS -->
+      </section>
+
+    </div>
+
+    <!-- VISTA: PIZARRA TÁCTICA -->
+    <div id="view-board" class="w-full max-w-4xl mx-auto fade-in hidden">
+      <div class="bg-white p-6 rounded-xl shadow-lg border-2 border-emerald-100 h-full">
+        <h3 class="text-xl font-bold text-emerald-800 mb-2 flex items-center"><i data-lucide="map" class="w-5 h-5 mr-2"></i> Pizarra Táctica</h3>
+        <p class="text-slate-500 mb-6 text-sm">Organiza a tu equipo antes de salir al campo. Arrastra las fichas.</p>
+        
+        <!-- Cancha -->
+        <div id="tactical-board" class="relative w-full aspect-[4/3] max-w-3xl mx-auto bg-emerald-700 rounded-lg overflow-hidden cursor-crosshair shadow-inner pitch-pattern touch-none">
+          <!-- Líneas de la cancha -->
+          <div class="absolute inset-0 border-4 border-white opacity-70 m-4 rounded-sm pointer-events-none"></div>
+          <div class="absolute top-0 bottom-0 left-1/2 border-l-4 border-white opacity-70 pointer-events-none"></div>
+          <div class="absolute top-1/2 left-1/2 w-16 h-16 sm:w-20 sm:h-20 border-4 border-white opacity-70 rounded-full transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+          <div class="absolute top-1/4 left-4 w-1/6 h-1/2 border-4 border-l-0 border-white opacity-70 pointer-events-none"></div>
+          <div class="absolute top-1/4 right-4 w-1/6 h-1/2 border-4 border-r-0 border-white opacity-70 pointer-events-none"></div>
+          
+          <!-- Contenedor de Fichas -->
+          <div id="tokens-container"></div>
+        </div>
+        
+        <div class="mt-4 text-center">
+          <button onclick="resetBoard()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 text-sm font-semibold transition">
+            Reiniciar Posiciones
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // --- DATOS DEL CURRÍCULO DE 10 SEMANAS ---
+    const curriculum10Weeks = [
+      {
+        week: 1, title: 'Adaptación y Pases Cortos', objective: 'Familiarización con el balón y precisión en el pase a ras de suelo.',
+        warmup: 'Trote suave (5 min). Pases libres en parejas a 3 metros (5 min). Estiramiento dinámico (5 min).',
+        field: [
+          { id: 'w1f1', title: 'Triángulo de Pases', focus: 'Técnica', desc: 'Grupos de 3 en forma de triángulo. Pase fuerte y al pie, moviéndose al vértice libre tras pasar.', duration: 420, tips: ['Golpear con el borde interno.', 'Pie de apoyo firme junto al balón.'] },
+          { id: 'w1f2', title: 'Rondo Básico 4v1', focus: 'Posesión', desc: 'Cuatro jugadores en un cuadrado mantienen el balón ante un defensor. Máximo 2 toques.', duration: 480, tips: ['Estar siempre perfilado.', 'Comunicación constante.'] }
+        ],
+        gk: [
+          { id: 'w1g1', title: 'Blocaje Frontal', focus: 'Técnica Base', desc: 'Pases directos al pecho del portero. Debe embolsar el balón sin dar rebote.', duration: 300, tips: ['Formar un "diamante" o "W" con las manos.', 'Amortiguar con el pecho.'] },
+          { id: 'w1g2', title: 'Saque Raso con la Mano', focus: 'Distribución', desc: 'El portero atrapa y simula un saque rápido a ras de piso (tipo boliche) hacia un compañero a 10m.', duration: 300, tips: ['Paso largo hacia adelante al lanzar.', 'El balón no debe rebotar antes de llegar.'] }
+        ]
+      },
+      {
+        week: 2, title: 'Conducción y Regate (1 vs 1)', objective: 'Mejorar el control del balón en movimiento y la confianza para encarar.',
+        warmup: 'Juego de "La Mancha" con balón: todos conducen y uno intenta tocar los balones de los demás (10 min).',
+        field: [
+          { id: 'w2f1', title: 'Circuito en Zig-Zag', focus: 'Control', desc: 'Conducción a través de conos usando solo pierna derecha, luego solo izquierda, luego empeine exterior.', duration: 300, tips: ['Mirada intermitente (balón-frente).', 'Toques cortos al balón.'] },
+          { id: 'w2f2', title: 'Duelo 1 vs 1 frontal', focus: 'Regate', desc: 'Atacante vs Defensor en un pasillo de 10x5m. El atacante debe superar la línea de fondo con el balón dominado.', duration: 600, tips: ['Cambio de ritmo rápido tras el regate.', 'Usar fintas corporales.'] }
+        ],
+        gk: [
+          { id: 'w2g1', title: 'Pasos Cruzados y Atrape', focus: 'Desplazamiento', desc: 'Movimiento lateral rápido tocando postes y recibiendo un remate raso.', duration: 300, tips: ['Mantener el centro de gravedad bajo.', 'No cruzar los pies, hacer pasos laterales.'] },
+          { id: 'w2g2', title: 'Achique al Atacante', focus: '1v1', desc: 'Un jugador conduce hacia el portero. El portero sale rápido y se planta (posición de cruz) justo antes del tiro.', duration: 480, tips: ['Salir mientras el jugador mira el balón.', 'Hacerse grande.'] }
+        ]
+      },
+      {
+        week: 3, title: 'Recepción Orientada', objective: 'Aprender a controlar el balón con intención hacia el espacio libre.',
+        warmup: 'Pases en parejas, pero antes de devolver, el jugador debe tocar un cono a su derecha o izquierda (10 min).',
+        field: [
+          { id: 'w3f1', title: 'Control y Giro', focus: 'Recepción', desc: 'Jugador de espaldas recibe el pase, se gira en un solo toque y pasa al siguiente compañero.', duration: 420, tips: ['Recibir con el pie más alejado (pie abierto).', 'Mirar por encima del hombro antes de recibir.'] },
+          { id: 'w3f2', title: 'Posesión con Transición', focus: 'Juego Espacial', desc: 'Dos cuadrados adyacentes. Se juegan 5 pases en uno y se debe cambiar la orientación al otro cuadrado mediante un control largo.', duration: 480, tips: ['Primer toque fuerte hacia el espacio libre.'] }
+        ],
+        gk: [
+          { id: 'w3g1', title: 'Control con el Pie bajo presión', focus: 'Juego de Pies', desc: 'El entrenador pasa el balón al portero y le hace una presión ligera. El portero debe controlar hacia un lado y pasar.', duration: 360, tips: ['Mantener la calma.', 'Controlar hacia fuera de la portería.'] },
+          { id: 'w3g2', title: 'Vuelos Laterales Rasos', focus: 'Reflejos', desc: 'Tiros suaves rasos a los lados. El portero ataca el balón cayendo hacia adelante.', duration: 420, tips: ['Atacar el balón, no caer hacia atrás.', 'Manos siempre por delante.'] }
+        ]
+      },
+      {
+        week: 4, title: 'Finalización y Tiro a Puerta', objective: 'Mejorar la técnica de golpeo y la toma de decisiones frente al arco.',
+        warmup: 'Rondos de activación rápidos. Estiramientos dinámicos enfocados en isquiotibiales y cuádriceps (10 min).',
+        field: [
+          { id: 'w4f1', title: 'Tiro tras Pase de Pared', focus: 'Definición', desc: 'Jugador toca al centro, recibe devolución al espacio y define de primera intención.', duration: 480, tips: ['Cuerpo inclinado sobre el balón.', 'Golpear con el empeine para potencia.'] },
+          { id: 'w4f2', title: 'Definición bajo presión', focus: 'Competencia', desc: 'Atacante sale con balón hacia el arco, un defensor sale 2 segundos después a perseguirlo.', duration: 480, tips: ['Mantener la calma.', 'Decidir rápido: ¿potencia o colocación?'] }
+        ],
+        gk: [
+          { id: 'w4g1', title: 'Reacción Rápida (Rebotes)', focus: 'Agilidad', desc: 'Tiro a puerta, el portero desvía, e inmediatamente el entrenador tira un segundo balón.', duration: 300, tips: ['Levantarse rápido (usar técnica de balanceo, no las manos).'] },
+          { id: 'w4g2', title: 'Tiros de Media Distancia', focus: 'Posicionamiento', desc: 'Varios jugadores tiran desde fuera del área. El portero debe ajustar su posición (arco) según de dónde venga el tiro.', duration: 600, tips: ['Dar pasos cortos para acomodarse.', 'No estar pegado a la línea de gol.'] }
+        ]
+      },
+      {
+        week: 5, title: 'Principios Defensivos Básicos', objective: 'Aprender a retrasar el ataque rival (temporizar) y recuperar el balón.',
+        warmup: 'Juego de espejos en parejas: uno se mueve lateralmente y el otro debe imitarlo sin perderlo de vista (10 min).',
+        field: [
+          { id: 'w5f1', title: 'Temporización 1 vs 1', focus: 'Defensa', desc: 'El defensor no debe robar de inmediato, sino aguantar al atacante, perfilarlo hacia la banda y esperar el error.', duration: 420, tips: ['Posición lateral (perfilado).', 'Bajar el centro de gravedad.', 'Mirar el balón, no los pies del rival.'] },
+          { id: 'w5f2', title: 'Defensa 2 vs 2 (Coberturas)', focus: 'Trabajo en Equipo', desc: 'Dos defensas contra dos atacantes. Si el 1er defensa es superado, el 2do debe estar detrás (en diagonal) para cubrirlo.', duration: 600, tips: ['Comunicación ("¡Voy!", "¡Te cubro!").', 'No salir los dos a presionar al mismo tiempo.'] }
+        ],
+        gk: [
+          { id: 'w5g1', title: 'Salidas Fuera del Área', focus: 'Líbero', desc: 'Balones largos a la espalda de la defensa. El portero debe decidir salir del área para despejar con el pie.', duration: 420, tips: ['Lectura rápida de la trayectoria.', 'Despeje fuerte y alto a las bandas.'] },
+          { id: 'w5g2', title: 'Voz de Mando', focus: 'Comunicación', desc: 'Simulación de ataque. El portero no tapa, pero debe ordenar a sus defensas ("¡Sal!", "¡Cierra!", "¡A la derecha!").', duration: 300, tips: ['Voz fuerte y clara.', 'Instrucciones cortas.'] }
+        ]
+      },
+      {
+        week: 6, title: 'Posesión y Apoyo Espacial', objective: 'Fomentar la movilidad sin balón y la creación de líneas de pase.',
+        warmup: 'Trote mezclado con ejercicios de coordinación mental (ej. entrenador dice "1" saltar, "2" tocar suelo) (10 min).',
+        field: [
+          { id: 'w6f1', title: 'Comodines en Banda', focus: 'Amplitud', desc: 'Juego 4 vs 4 en el centro, con 2 jugadores (comodines) en las bandas exteriores que solo pueden jugar a 1 toque.', duration: 480, tips: ['Usar todo el ancho del campo.', 'El pase al comodín es para descongestionar.'] },
+          { id: 'w6f2', title: 'Posesión Direccional (Mini Porterías)', focus: 'Visión', desc: 'Posesión 5v5. Para sumar un punto, el equipo debe hacer pasar el balón entre dos miniconos tras dar 4 pases.', duration: 600, tips: ['Mover el balón rápido de un lado a otro.', 'No forzar pases divididos.'] }
+        ],
+        gk: [
+          { id: 'w6g1', title: 'Juego de Pies (Apoyo)', focus: 'Pases', desc: 'El portero actúa de comodín en el rondo de los jugadores de campo. Ayuda a cambiar el juego de lado.', duration: 480, tips: ['Ofrecerse como línea de pase segura.', 'Control orientado rápido.'] },
+          { id: 'w6g2', title: 'Saque Volea / Semivolea', focus: 'Distribución', desc: 'Técnica para iniciar contragolpes. Saque de volea apuntando a zonas específicas (aros o cuadrados en el campo).', duration: 300, tips: ['Soltar el balón de la mano en el momento justo.', 'Cuerpo ligeramente inclinado.'] }
+        ]
+      },
+      {
+        week: 7, title: 'Transiciones (Defensa a Ataque)', objective: 'Reacción rápida inmediata tras recuperar o perder el balón.',
+        warmup: 'Rondos dinámicos. A la señal del silbato, todos corren a tocar la línea de banda y vuelven (10 min).',
+        field: [
+          { id: 'w7f1', title: 'Ataque Rápido 3 vs 2', focus: 'Contragolpe', desc: 'Inicia el ataque 3 jugadores contra 2 defensas. Tienen máximo 10 segundos para finalizar la jugada.', duration: 600, tips: ['Correr hacia adelante sin demorar.', 'Pases verticales fuertes.', 'Finalizar la jugada (que termine en tiro).'] },
+          { id: 'w7f2', title: 'Presión tras Pérdida', focus: 'Transición Defensiva', desc: 'Juego de posesión. El equipo que pierde el balón tiene 5 segundos de presión asfixiante para recuperarlo. Si no, se repliegan.', duration: 480, tips: ['Los más cercanos al balón presionan de inmediato.', 'Cerrar líneas de pase.'] }
+        ],
+        gk: [
+          { id: 'w7g1', title: 'Saque Rápido tras Atrape', focus: 'Visión', desc: 'El portero atrapa un centro y tiene 3 segundos para lanzar con la mano a un compañero que arranca en velocidad.', duration: 300, tips: ['Escaneo rápido del campo al atrapar el balón.', 'Lanzamiento preciso por debajo de la cintura.'] },
+          { id: 'w7g2', title: 'Defensa de Contragolpe', focus: 'Posicionamiento', desc: 'Atacan a portería 2 vs 1. El portero debe achicar el espacio mientras gana tiempo para que regrese su defensa.', duration: 420, tips: ['Amagar con salir para confundir al atacante.', 'Cubrir el primer palo.'] }
+        ]
+      },
+      {
+        week: 8, title: 'Juego por Bandas y Centros', objective: 'Aprender a abrir el campo, desdoblar y rematar balones aéreos.',
+        warmup: 'Juego de pases largos en parejas (15-20 metros) para calentar el empeine (10 min).',
+        field: [
+          { id: 'w8f1', title: 'Desdoblamiento por Banda', focus: 'Ataque', desc: 'El lateral pasa al extremo, el extremo conduce hacia el centro y el lateral le pasa por detrás (desdobla) para recibir el balón y centrar.', duration: 480, tips: ['Timing (tiempo) de la carrera del lateral.', 'El extremo debe atraer al defensa.'] },
+          { id: 'w8f2', title: 'Remates al Centro', focus: 'Definición', desc: 'Envío de centros desde los laterales. Dos delanteros entran al área cruzando sus trayectorias (uno al primer palo, otro al segundo).', duration: 600, tips: ['Atacar el balón, no esperarlo.', 'Giro de cuello al cabecear.'] }
+        ],
+        gk: [
+          { id: 'w8g1', title: 'Corte de Centros (Salidas por Alto)', focus: 'Juego Aéreo', desc: 'El entrenador lanza centros al área chica. El portero debe salir, gritar "¡Mía!" y atrapar el balón en el punto más alto.', duration: 480, tips: ['Levantar una rodilla para protegerse.', 'Calculo de trayectoria.'] },
+          { id: 'w8g2', title: 'Despeje de Puños', focus: 'Decisión', desc: 'Centros con oposición (un jugador molesta al portero). Si no puede atrapar, despejar fuerte hacia los laterales con los puños.', duration: 300, tips: ['Golpear el balón en la parte baja para que suba.', 'Despejar hacia las bandas, NUNCA al centro.'] }
+        ]
+      },
+      {
+        week: 9, title: 'Táctica a Balón Parado', objective: 'Organización ofensiva y defensiva en tiros libres y saques de esquina.',
+        warmup: 'Rondos suaves y ejercicios de elasticidad (previo a tiros fuertes) (10 min).',
+        field: [
+          { id: 'w9f1', title: 'Córners Ofensivos / Defensivos', focus: 'Estrategia', desc: 'Práctica de marcas al hombre vs marcas en zona en los córners. Jugadas preestablecidas (ej. saque en corto).', duration: 480, tips: ['Marcajes muy pegados.', 'En ataque, bloqueos para liberar a un rematador.'] },
+          { id: 'w9f2', title: 'Tiros Libres Directos', focus: 'Técnica Específica', desc: 'Jugadores con mejor golpeo practican superar barreras desde distintas posiciones (frontal y diagonal).', duration: 420, tips: ['Identificar si el portero deja descubierto un palo.', 'Golpeo con interior o empeine total.'] }
+        ],
+        gk: [
+          { id: 'w9g1', title: 'Organización de Barrera', focus: 'Liderazgo', desc: 'El portero coloca a los jugadores en la barrera rápidamente (2, 3 o 4 hombres) según la distancia y ángulo del tiro libre.', duration: 300, tips: ['Cubrir el palo más cercano al balón con la barrera.', 'El portero cubre el palo lejano.'] },
+          { id: 'w9g2', title: 'Posicionamiento en Córner', focus: 'Atención', desc: 'Revisar dónde se ubica el portero en los saques de esquina (centro de la portería o más hacia el segundo palo).', duration: 300, tips: ['Estar perfilado (ver el balón y el campo).', 'No dejarse encerrar por los rivales.'] }
+        ]
+      },
+      {
+        week: 10, title: 'Aplicación Táctica (Minitorneo)', objective: 'Evaluar lo aprendido durante las 9 semanas en situación real de juego.',
+        warmup: 'Activación libre con balón. Ruedas de pases (10 min).',
+        field: [
+          { id: 'w10f1', title: 'Partido Dirigido (Condicionado)', focus: 'Comprensión', desc: 'Partido de 20 minutos donde los goles tras un pase de banda valen doble. Se pausa el juego para corregir posicionamientos.', duration: 600, tips: ['Parar la jugada si hay un error táctico grave (ej. todos amontonados).', 'Felicitar buenas tomas de decisiones.'] },
+          { id: 'w10f2', title: 'Torneo Final (Juego Libre)', focus: 'Disfrute', desc: 'Torneo triangular. Partido sin interrupciones del entrenador. Dejar que los chicos resuelvan los problemas en la cancha.', duration: 600, tips: ['Fomentar el juego limpio.', 'Rotar posiciones para que todos participen.'] }
+        ],
+        gk: [
+          { id: 'w10g1', title: 'Evaluación en Partido', focus: 'Rendimiento Global', desc: 'El entrenador observa la comunicación, posicionamiento, salidas y saques del portero durante el torneo.', duration: 600, tips: ['Anotar puntos a mejorar para el próximo ciclo.', 'Dar confianza tras un error.'] },
+          { id: 'w10g2', title: 'Tanda de Penaltis (Cierre)', focus: 'Diversión', desc: 'Para finalizar el ciclo de 10 semanas, todos los jugadores tiran un penalti. Competición amistosa.', duration: 300, tips: ['Aguantar hasta el final.', 'Técnica de distracción legal.'] }
+        ]
+      }
+    ];
+
+    // --- VARIABLES DE ESTADO ---
+    let activeTab = 'plan';
+    let selectedWeekIdx = 0;
+    
+    // Almacén de intervalos de cronómetros
+    let timersState = {};
+
+    // --- FUNCIONES DE NAVEGACIÓN Y RENDERIZADO ---
+    function switchTab(tab) {
+      activeTab = tab;
+      
+      const btnPlan = document.getElementById('btn-tab-plan');
+      const btnBoard = document.getElementById('btn-tab-board');
+      const viewPlan = document.getElementById('view-plan');
+      const viewBoard = document.getElementById('view-board');
+
+      if (tab === 'plan') {
+        btnPlan.className = "flex items-center space-x-2 px-4 py-2 rounded-md font-semibold text-sm transition-colors bg-emerald-700 text-white shadow";
+        btnBoard.className = "flex items-center space-x-2 px-4 py-2 rounded-md font-semibold text-sm transition-colors text-emerald-300 hover:text-white";
+        viewPlan.classList.remove('hidden');
+        viewBoard.classList.add('hidden');
+      } else {
+        btnBoard.className = "flex items-center space-x-2 px-4 py-2 rounded-md font-semibold text-sm transition-colors bg-emerald-700 text-white shadow";
+        btnPlan.className = "flex items-center space-x-2 px-4 py-2 rounded-md font-semibold text-sm transition-colors text-emerald-300 hover:text-white";
+        viewBoard.classList.remove('hidden');
+        viewPlan.classList.add('hidden');
+      }
+    }
+
+    function selectWeek(idx) {
+      selectedWeekIdx = idx;
+      renderSidebar();
+      renderWeekContent();
+    }
+
+    function renderSidebar() {
+      const sidebar = document.getElementById('sidebar-weeks');
+      sidebar.innerHTML = '';
+      
+      curriculum10Weeks.forEach((weekData, idx) => {
+        const isSelected = selectedWeekIdx === idx;
+        const btnClasses = isSelected 
+          ? 'bg-emerald-100 text-emerald-800 border-l-4 border-emerald-600 shadow-sm' 
+          : 'text-slate-600 hover:bg-slate-50 border-l-4 border-transparent';
+        const numClasses = isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500';
+        const chevronHtml = isSelected ? `<i data-lucide="chevron-right" class="hidden md:block opacity-50 w-4 h-4"></i>` : '';
+
+        const btn = document.createElement('button');
+        btn.onclick = () => selectWeek(idx);
+        btn.className = `flex items-center justify-between text-left px-3 py-3 md:py-2.5 rounded-lg text-sm md:text-base font-medium transition-colors whitespace-nowrap md:whitespace-normal flex-shrink-0 md:flex-shrink ${btnClasses}`;
+        btn.innerHTML = `
+          <span class="flex items-center">
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2 ${numClasses}">
+              ${weekData.week}
+            </span>
+            <span class="truncate max-w-[120px] md:max-w-[150px]">${weekData.title}</span>
+          </span>
+          ${chevronHtml}
+        `;
+        sidebar.appendChild(btn);
+      });
+      lucide.createIcons();
+    }
+
+    function generateExerciseHTML(ex, typeColor) {
+      const bgMap = { blue: 'bg-blue-100 text-blue-800', yellow: 'bg-yellow-100 text-yellow-800' };
+      const borderMap = { blue: 'border-slate-100', yellow: 'border-yellow-100' };
+      const tipsBgMap = { blue: 'bg-slate-50', yellow: 'bg-yellow-50' };
+      
+      let tipsHtml = ex.tips.map(tip => `<li>${tip}</li>`).join('');
+      
+      return `
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="font-bold text-slate-800">${ex.title}</h4>
+            <span class="${bgMap[typeColor]} text-[10px] px-2 py-1 rounded-full font-bold uppercase">${ex.focus}</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-4 flex-grow">${ex.desc}</p>
+          <div class="${tipsBgMap[typeColor]} p-3 rounded-lg text-sm mb-4 border ${borderMap[typeColor]}">
+            <strong class="text-${typeColor === 'blue' ? 'slate-700' : 'yellow-900'} block mb-1">Fijarse en:</strong>
+            <ul class="list-disc pl-4 text-${typeColor === 'blue' ? 'slate-600' : 'yellow-800'} space-y-1">
+              ${tipsHtml}
+            </ul>
+          </div>
+          
+          <!-- Cronómetro UI -->
+          <div class="flex items-center space-x-3 bg-slate-100 p-3 rounded-lg mt-auto">
+            <i data-lucide="clock" class="w-5 h-5 text-emerald-600"></i>
+            <span id="timer-text-${ex.id}" class="font-mono text-xl font-bold w-16 text-slate-700">--:--</span>
+            <button onclick="toggleTimer('${ex.id}')" id="timer-btn-${ex.id}" class="p-2 bg-emerald-500 text-white rounded-full hover:bg-emerald-600 transition flex items-center justify-center w-8 h-8">
+              <i data-lucide="play" class="w-4 h-4 timer-icon-play"></i>
+              <i data-lucide="pause" class="w-4 h-4 timer-icon-pause hidden"></i>
+            </button>
+            <button onclick="resetTimer('${ex.id}')" class="p-2 bg-slate-300 text-slate-700 rounded-full hover:bg-slate-400 transition flex items-center justify-center w-8 h-8">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            </button>
+            <span id="timer-done-${ex.id}" class="text-emerald-600 font-bold ml-2 text-sm flex items-center hidden">
+              <i data-lucide="check-circle" class="w-4 h-4 mr-1"></i> ¡Listo!
+            </span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderWeekContent() {
+      // Limpiar cronómetros anteriores
+      Object.values(timersState).forEach(t => clearInterval(t.intervalId));
+      timersState = {};
+
+      const week = curriculum10Weeks[selectedWeekIdx];
+      const container = document.getElementById('week-content');
+      
+      let fieldExercisesHtml = week.field.map(ex => generateExerciseHTML(ex, 'blue')).join('');
+      let gkExercisesHtml = week.gk.map(ex => generateExerciseHTML(ex, 'yellow')).join('');
+
+      container.innerHTML = `
+        <!-- Cabecera -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-emerald-200 border-l-8 border-l-emerald-500">
+          <h2 class="text-2xl md:text-3xl font-black text-slate-800 mb-2">
+            Semana ${week.week}: <span class="text-emerald-700">${week.title}</span>
+          </h2>
+          <p class="text-slate-600 text-lg flex items-start">
+            <span class="font-bold text-emerald-800 mr-2">🎯 Objetivo:</span> 
+            ${week.objective}
+          </p>
+        </div>
+
+        <!-- Calentamiento -->
+        <div class="bg-orange-50 p-5 rounded-xl border border-orange-200">
+          <h3 class="text-lg font-bold text-orange-800 flex items-center mb-2">
+            <i data-lucide="activity" class="mr-2"></i> Fase 1: Calentamiento (~15 min)
+          </h3>
+          <p class="text-orange-900 font-medium">${week.warmup}</p>
+        </div>
+
+        <!-- Ejercicios -->
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div class="flex items-center space-x-2 pb-2 border-b-2 border-blue-200">
+              <i data-lucide="users" class="text-blue-600"></i>
+              <h3 class="text-xl font-bold text-blue-800">Jugadores de Campo</h3>
+            </div>
+            ${fieldExercisesHtml}
+          </div>
+          <div class="space-y-4">
+            <div class="flex items-center space-x-2 pb-2 border-b-2 border-yellow-200">
+              <i data-lucide="shield" class="text-yellow-600"></i>
+              <h3 class="text-xl font-bold text-yellow-800">Trabajo de Porteros</h3>
+            </div>
+            ${gkExercisesHtml}
+          </div>
+        </div>
+      `;
+      
+      lucide.createIcons();
+
+      // Inicializar estado de cronómetros
+      const allEx = [...week.field, ...week.gk];
+      allEx.forEach(ex => {
+        timersState[ex.id] = {
+          initial: ex.duration,
+          current: ex.duration,
+          isActive: false,
+          intervalId: null
+        };
+        updateTimerUI(ex.id);
+      });
+    }
+
+    // --- LÓGICA DE CRONÓMETROS ---
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    function updateTimerUI(id) {
+      const state = timersState[id];
+      const textEl = document.getElementById(`timer-text-${id}`);
+      const btnEl = document.getElementById(`timer-btn-${id}`);
+      const doneEl = document.getElementById(`timer-done-${id}`);
+      
+      if(textEl) textEl.textContent = formatTime(state.current);
+      
+      if(btnEl) {
+        const playIcon = btnEl.querySelector('.timer-icon-play');
+        const pauseIcon = btnEl.querySelector('.timer-icon-pause');
+        if (state.isActive) {
+          playIcon.classList.add('hidden');
+          pauseIcon.classList.remove('hidden');
+        } else {
+          pauseIcon.classList.add('hidden');
+          playIcon.classList.remove('hidden');
+        }
+      }
+
+      if(doneEl) {
+        if(state.current === 0 && !state.isActive) {
+          doneEl.classList.remove('hidden');
+        } else {
+          doneEl.classList.add('hidden');
+        }
+      }
+    }
+
+    function toggleTimer(id) {
+      const state = timersState[id];
+      if (state.current === 0) return; // No hacer nada si ya terminó
+      
+      if (state.isActive) {
+        // Pausar
+        clearInterval(state.intervalId);
+        state.isActive = false;
+      } else {
+        // Iniciar
+        state.isActive = true;
+        state.intervalId = setInterval(() => {
+          if (state.current > 0) {
+            state.current -= 1;
+            updateTimerUI(id);
+          }
+          if (state.current === 0) {
+            clearInterval(state.intervalId);
+            state.isActive = false;
+            updateTimerUI(id);
+          }
+        }, 1000);
+      }
+      updateTimerUI(id);
+    }
+
+    function resetTimer(id) {
+      const state = timersState[id];
+      clearInterval(state.intervalId);
+      state.current = state.initial;
+      state.isActive = false;
+      updateTimerUI(id);
+    }
+
+    // --- LÓGICA DE LA PIZARRA TÁCTICA (DRAG & DROP) ---
+    const initialTokens = [
+      { id: 'b1', type: 'blue', x: 20, y: 30 }, { id: 'b2', type: 'blue', x: 20, y: 70 },
+      { id: 'b3', type: 'blue', x: 40, y: 50 }, { id: 'b4', type: 'blue', x: 30, y: 20 }, { id: 'b5', type: 'blue', x: 30, y: 80 },
+      { id: 'r1', type: 'red', x: 80, y: 30 }, { id: 'r2', type: 'red', x: 80, y: 70 },
+      { id: 'r3', type: 'red', x: 60, y: 50 }, { id: 'r4', type: 'red', x: 70, y: 20 }, { id: 'r5', type: 'red', x: 70, y: 80 },
+      { id: 'ball', type: 'ball', x: 50, y: 50 }
+    ];
+    let tokens = JSON.parse(JSON.stringify(initialTokens));
+    let draggingTokenId = null;
+
+    function renderBoardTokens() {
+      const container = document.getElementById('tokens-container');
+      container.innerHTML = '';
+      
+      tokens.forEach(token => {
+        const el = document.createElement('div');
+        el.id = `token-${token.id}`;
+        
+        let bgClass = '';
+        let content = '';
+        let bgImage = 'none';
+
+        if (token.type === 'blue') {
+          bgClass = 'bg-blue-600';
+          content = token.id.replace(/[^0-9]/g, '');
+        } else if (token.type === 'red') {
+          bgClass = 'bg-red-600';
+          content = token.id.replace(/[^0-9]/g, '');
+        } else {
+          bgClass = 'bg-black !border-black';
+          bgImage = 'radial-gradient(circle at 30% 30%, white 10%, black 80%)';
+        }
+
+        el.className = `absolute w-6 h-6 sm:w-8 sm:h-8 rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-lg cursor-grab active:cursor-grabbing hover:scale-110 flex items-center justify-center font-bold text-xs text-white border-2 border-white select-none touch-none ${bgClass}`;
+        el.style.left = `${token.x}%`;
+        el.style.top = `${token.y}%`;
+        el.style.backgroundImage = bgImage;
+        if(token.type !== 'ball') { el.textContent = content; }
+        
+        // Eventos MOUSE
+        el.addEventListener('mousedown', (e) => startDrag(e, token.id));
+        // Eventos TOUCH
+        el.addEventListener('touchstart', (e) => startDrag(e, token.id), {passive: false});
+
+        container.appendChild(el);
+      });
+    }
+
+    function resetBoard() {
+      tokens = JSON.parse(JSON.stringify(initialTokens));
+      renderBoardTokens();
+    }
+
+    // Funciones Drag & Drop
+    function startDrag(e, id) {
+      if(e.type === 'touchstart') { e.preventDefault(); }
+      draggingTokenId = id;
+    }
+
+    function onDrag(e) {
+      if (!draggingTokenId) return;
+      e.preventDefault(); // Prevenir scroll en móviles al arrastrar
+      
+      const board = document.getElementById('tactical-board');
+      const rect = board.getBoundingClientRect();
+      
+      let clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+      let clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+      
+      let newX = ((clientX - rect.left) / rect.width) * 100;
+      let newY = ((clientY - rect.top) / rect.height) * 100;
+      
+      // Límites
+      newX = Math.max(0, Math.min(100, newX));
+      newY = Math.max(0, Math.min(100, newY));
+
+      // Actualizar Token en array y en DOM directamente (más rápido que repintar todo)
+      const token = tokens.find(t => t.id === draggingTokenId);
+      if (token) {
+        token.x = newX;
+        token.y = newY;
+        const el = document.getElementById(`token-${token.id}`);
+        if(el) {
+          el.style.left = `${newX}%`;
+          el.style.top = `${newY}%`;
+        }
+      }
+    }
+
+    function endDrag() {
+      draggingTokenId = null;
+    }
+
+    // Inicializar eventos globales para el Drag & Drop de la pizarra
+    window.addEventListener('mousemove', onDrag);
+    window.addEventListener('touchmove', onDrag, {passive: false});
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchend', endDrag);
+
+    // --- INICIO DE LA APLICACIÓN ---
+    window.onload = () => {
+      renderSidebar();
+      renderWeekContent();
+      renderBoardTokens();
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
